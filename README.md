@@ -24,7 +24,7 @@ seurat <- subset(seurat, subset = nFeature_RNA > 750 & percent.mt < 10)
 
 <img width="2000" height="1064" alt="plot_QC" src="https://github.com/user-attachments/assets/dbc5cf1a-9a4a-4685-9cb4-03b6d2c30fa8" />
 
-_Figure 1:_ Violin plots showing the number of unique genes, number of molecules, and mitochondrial percent, grouped by timepoint. Quality metrics pre-filtering (top row) were used to determine filters for subsetting, resulting in a reduction of cells with low counts of unique genes and high mitochondrial content (bottom row).
+**Figure 1:** Violin plots showing the number of unique genes, number of molecules, and mitochondrial percent, grouped by timepoint. Quality metrics pre-filtering (top row) were used to determine filters for subsetting, resulting in a reduction of cells with low counts of unique genes and high mitochondrial content (bottom row).
 
 ## 2.3 | Normalization, Feature Selection, Scaling, and UMAP Clustering
 Normalization, feature selection, and scaling were performed via the SCTransform workflow, which fits a regularized negative binomial model. This accounts for the variability in the number of RNA molecules within cells during the normalization process. The glmGamPoi package v1.22.0 was used to speed up performance of this step. All defaults were used, except ncells was set to 2000 and conserve.memory was set to TRUE to optimize memory efficiency. The SCTransform method returned an SCT assay with 3000 variable features selected.
@@ -38,11 +38,16 @@ seurat <- FindClusters(seurat, resolution = 0.6)
 seurat <- RunUMAP(seurat, dims = 1:33)
 ```
 
+<img width="2000" height="1064" alt="F2_elbow" src="https://github.com/user-attachments/assets/168bc2dc-688b-4368-a0af-ae0a99946266" />
+
+**Figure 2:** Elbow plot of principal components used to determine optimal k value.
+
+
 Clustering was performed via FindNeighbors and FindClusters, which used 33 principal components and a resolution of 0.6, respectively. The resolution was chosen based on the method described by Kazer et al. (2025). Non-linear dimensional reduction was then visualized via UMAP, generating the unannotated cluster plot with 40 clusters (Fig. 3).
 
 <img width="2000" height="1064" alt="plot_umap" src="https://github.com/user-attachments/assets/dc4886a6-5030-4d93-ac94-08222d9bfc8d" />
 
-_Figure 3:_ Unannotated cluster map generated via UMAP reduction with k = 33 and resolution = 0.6, separating cells into 40 clusters.
+**Figure 3:** Unannotated cluster map generated via UMAP reduction with k = 33 and resolution = 0.6, separating cells into 40 clusters.
 
 
 ## 2.4 | Cluster Annotation
@@ -55,7 +60,7 @@ ann_mrs <- SingleR(
   labels = MouseRNAseqData$label.fine,
   de.method = "wilcox")
 ```
-Manual annotation was performed by running FindAllMarkers with the entire dataset. The logfc.threshold and min.pct thresholds were set to the Seurat v4 values (0.25 each) to speed up computation. The Wilcoxon method was again used for its suitability to single cell data. The top 5 markers for each cluster were selected according to their adjusted p-value and average log2foldchange, and these markers were cross-referenced with papers and databases to produce two annotations: one that was literature-based, and one that was based on online reference databases. The .csv files generated for this step can be found in the [supplementary material.](supplementary/). Four clusters were annotated as the same cell type, so further analysis was done by finding markers that differentiated each cluster from one another. However, no markers were found that could disambiguate each cluster.
+Manual annotation was performed by running FindAllMarkers with the entire dataset. The logfc.threshold and min.pct thresholds were set to the Seurat v4 values (0.25 each) to speed up computation. The Wilcoxon method was again used for its suitability to single cell data. The top 5 markers for each cluster were selected according to their adjusted p-value and average log2foldchange, and these markers were cross-referenced with papers and databases to produce two annotations: one that was literature-based, and one that was based on online reference databases. The .csv files generated for this step can be found in the [supplementary material.](supplementary/) Four clusters were annotated as the same cell type, so further analysis was done by finding markers that differentiated each cluster from one another. However, no markers were found that could disambiguate each cluster.
 ```
 markers_all <- FindAllMarkers(seurat,
   only.pos = T,
@@ -109,27 +114,27 @@ Non-linear dimensional reduction with UMAP showed that cells co-localized into 4
 
 <img width="2000" height="1064" alt="plot_auto" src="https://github.com/user-attachments/assets/851b126a-fd31-40a3-9f43-bfaef359c78b" />
 
-_Figure 4:_ Automatic annotation of clusters via SingleR, with MouseRNAseq Data (left) and ImmGenData (right) used as references.
+**Figure 4:** Automatic annotation of clusters via SingleR, with MouseRNAseq Data (left) and ImmGenData (right) used as references.
 
 
 Manual annotation was able to separate clusters into distinct cell subtypes, as well as identify clusters that were unlabeled by automatic annotation (Fig. 5). All 40 clusters were annotated, although some clusters found via UMAP were annotated as the same cell type. For instance, clusters 4, 5, 13, and 17 from the unannotated UMAP (Fig. 3) were annotated as Dlg2+ olfactory sensory neurons (Fig. 5). The manual annotations also validate the automatic annotations, with most clusters annotated as the same cell type. The manual annotations represent the most accurate and specific representations of the clusters, confirming that the UMAP clusters represent distinct cell types. For example, the large group of cells on the right are subtypes of olfactory sensory neurons, while the cluster at the bottom reflect populations of neutrophils in different stages of maturity. Clusters that were unlabeled in the automatic annotations are revealed to be populations of mural cells, sustentacular cells, glandular cells, and goblet/secretory cells. 
 
 <img width="2000" height="1064" alt="F5_manual_annotation" src="https://github.com/user-attachments/assets/db69c61c-56ee-405e-9e9e-a7e62bcd20f5" />
 
-_Figure 5:_ Manual annotation of clusters using papers (e.g. Kazer et al., 2025) and web sources (e.g. CellMarker 2.0, PanglaoDB).
+**Figure 5**: Manual annotation of clusters using papers (e.g. Kazer et al., 2025) and web sources (e.g. CellMarker 2.0, PanglaoDB).
 
 ## 3.2 | Feature Plots of Markers
 To further validate the results of the manual annotation, feature plots of known markers for specific cell lineages (Kazer et al., 2025) were created (Fig. 6). High levels of expression of the markers in specific clusters confirm the accuracy of annotation. For instance, Omp, a marker for neurons, is highly expressed in the region comprised of neuronal populations. Similarly, the expression of Ptprc (immune cells) and Flt1 (endothelial cells) aligns well with clusters of immune cell and endothelial cell populations (Fig. 5). Epcam shows a moderate level of expression in clusters annotated as epithelial cells, but also in the neuronal region, reflecting the close correspondence of olfactory sensory neurons and epithelial cells.
 
 <img width="2000" height="1064" alt="F6_lineage_markers" src="https://github.com/user-attachments/assets/af806426-160e-4eaa-900e-58ab726c972a" />
 
-_Figure 6:_ Feature plots showing the expression levels of canonical markers of cell types projected onto UMAP clusters (Omp: neurons, Epcam: epithelial cells, Ptprc: immune cells, Flt1: endothelial cells)
+**Figure 6**: Feature plots showing the expression levels of canonical markers of cell types projected onto UMAP clusters (Omp: neurons, Epcam: epithelial cells, Ptprc: immune cells, Flt1: endothelial cells)
 
 Focusing on epithelial cell subtypes, expression levels of known markers (Kazer et al., 20205) were visualized with feature plots (Fig. 7), demonstrating that manual annotation was able to capture specific cellular subtypes. Krt5, a marker for basal cells, is highly expressed in clusters annotated as basal and resting basal cells (Fig. 5). A similar trend is observed for Bpifb9b (glandular cells), Reg3g (goblet/secretory cells), Cftr (ionocytes), Trpm5 (Tuft cells), and Sec14l3 (sustentacular cells). While Foxj1 and Ltf map well to their respective cell types, they are also expressed in clusters not annotated as belonging to their lineage.
 
 <img width="2000" height="1064" alt="F7_epithelial_markers" src="https://github.com/user-attachments/assets/55831351-7a16-4873-88ee-7ef793446732" />
 
-_Figure 7:_ Feature plots showing the expression levels of known markers of epithelial cell subtypes (Krt5: basal, Foxj1: ciliated, Ltf: serous, Bpifb9b: glandular, Reg3g: goblet/secretory, Cftr: ionocyte, Trpm5: tuft, Sec14l3: sustentacular)
+**Figure 7:** Feature plots showing the expression levels of known markers of epithelial cell subtypes (Krt5: basal, Foxj1: ciliated, Ltf: serous, Bpifb9b: glandular, Reg3g: goblet/secretory, Cftr: ionocyte, Trpm5: tuft, Sec14l3: sustentacular)
 
 
 ## 3.3 | DE Analysis
@@ -137,24 +142,24 @@ Differential expression analysis was conducted on the cluster annotated as IFN-S
 
 <img width="2000" height="1064" alt="F8_volcano_DE" src="https://github.com/user-attachments/assets/c39e99c5-a075-49f6-b2b4-629f952bf31b" />
 
-_Figure 8:_ Volcano plot of differentially expressed IFN-Stim monocyte genes between naïve and 5DPI samples. Genes were deemed significant and differentially expressed if they had an adjusted p-value < 0.05 and |log2 fold change| < 1.
+**Figure 8:** Volcano plot of differentially expressed IFN-Stim monocyte genes between naïve and 5DPI samples. Genes were deemed significant and differentially expressed if they had an adjusted p-value < 0.05 and |log2 fold change| < 1.
 
 The expression level of three upregulated genes (Ly6c2, Gda, Slfn4) and three downregulated genes (Rnd3, Klrd1, Cd209d) were visualized with violin plots (Fig. 9, Fig.10). Figure 9 shows the expression levels in the pseudo-bulked condition, while Figure 10 shows them in the non-pseudo-bulked condition (i.e. individual cells treated as replicates). Both upregulated and down regulated genes show the expected pattern of expression levels between naïve and infected states. However, in the non-pseudo-bulked condition, Cd209d shows no difference in the level of expression between naïve and infected timepoints (Fig. 10).
 
 <img width="2000" height="1064" alt="F9_bulk" src="https://github.com/user-attachments/assets/6b4b1047-1428-4abc-b665-6101d21398c3" />
 
-_Figure 9:_ Violin plots of the top significant differentially expressed genes from DESeq2 analysis, with pseudo-bulked replicates. Expression levels of the upregulated genes (top row) and the downregulated genes (bottom row) are shown between naïve and infected groups.
+**Figure 9:** Violin plots of the top significant differentially expressed genes from DESeq2 analysis, with pseudo-bulked replicates. Expression levels of the upregulated genes (top row) and the downregulated genes (bottom row) are shown between naïve and infected groups.
 
 <img width="2000" height="1064" alt="F10__non_bulk" src="https://github.com/user-attachments/assets/8c29f9d7-5262-434a-af31-155aaf074b91" />
 
-_Figure 10:_ Violin plots of the top significant differentially expressed genes from DESeq2 analysis, with single cells as replicates. Expression levels of the upregulated genes (top row) and the downregulated genes (bottom row) are shown between naïve and infected groups.
+**Figure 10:** Violin plots of the top significant differentially expressed genes from DESeq2 analysis, with single cells as replicates. Expression levels of the upregulated genes (top row) and the downregulated genes (bottom row) are shown between naïve and infected groups.
 
 ## 3.4 | GSEA and ORA
 Gene set enrichment analysis (GSEA) and overrepresentation analysis (ORA) revealed biological processes and pathways enriched in the upregulated and downregulated genes in IFN-stim monocytes (Fig. 11, Supplementary Fig. 3). Although both methods varied in implementation, they found the same biological processes and pathways enriched in the samples. Biological processes related to activation of the innate immune response and viral response, as well as the recruitment of interferons/cytokines were enriched in the upregulated group. Similarly, pathways related to efferocytosis, signaling pathways, osteoclast differentiation, and response to viruses are upregulated. Conversely, processes related to the negative regulation of cell-mediated immunity and toxicity, as well as translational and metabolic processes, are downregulated. Pathways that are enriched in the downregulated group include ribosomal, thermogenesis-related and spliceosome-related pathways.
 
 <img width="2000" height="1064" alt="F11_GSEA" src="https://github.com/user-attachments/assets/79626a53-9502-43da-8bc7-602003418ecb" />
 
-_Figure 11:_ Dot plots visualizing the comparison of biological processes (left) and pathways (right) enriched in upregulated or downregulated genes in monocytes between naïve and infected states
+**Figure 11:** Dot plots visualizing the comparison of biological processes (left) and pathways (right) enriched in upregulated or downregulated genes in monocytes between naïve and infected states
 
 
 # 4 | Discussion
